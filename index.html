@@ -119,8 +119,8 @@ async function renderOperators(){
  <div class="operator">
   <div><div class="operator-name">👤 ${esc(o.name)}</div><div class="count">${o.count} foto</div></div>
   <div class="operator-actions">
-    <button class="secondary" onclick="window.openGallery(${esc(JSON.stringify(o.name))})">📁 Apri</button>
-    <button class="danger" onclick="window.deleteOperator(${esc(JSON.stringify(o.name))})">🗑️</button>
+    <button class="secondary" onclick="window.openGallery(decodeURIComponent('${encodeURIComponent(o.name)}'))">📁 Apri</button>
+    <button class="danger" onclick="window.deleteOperator(decodeURIComponent('${encodeURIComponent(o.name)}'))">🗑️</button>
   </div>
  </div>`).join("");
 }
