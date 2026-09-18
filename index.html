@@ -25,7 +25,8 @@ button{border:0;border-radius:12px;padding:13px 16px;font-weight:700;cursor:poin
 .pill{display:inline-block;background:#e2e8f0;border-radius:999px;padding:5px 9px;font-size:12px;margin:3px}
 .operator{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #e5e7eb}
 .operator:last-child{border-bottom:0}.operator-name{font-weight:700}.count{font-size:13px;color:#64748b}
-a.btn{display:inline-block;text-decoration:none;color:#fff;background:#0f172a;border-radius:12px;padding:11px 14px;font-weight:700}
+.operator-actions{display:flex;gap:6px}
+a.btn{display:inline-block;text-decoration:none;color:#fff;background:#0f172a;border-radius:12px;padding:11px 14px;font-weight:700;text-align:center}
 .notice{font-size:13px;color:#475569;line-height:1.45}
 </style>
 </head>
@@ -66,6 +67,7 @@ a.btn{display:inline-block;text-decoration:none;color:#fff;background:#0f172a;bo
     <button class="secondary" id="newPhoto">📷 Nuova foto</button>
     <button class="primary" id="sharePhoto">📤 Condividi</button>
     <a id="downloadPhoto" class="btn" download>💾 Salva</a>
+    <button class="danger" id="deleteCurrentPhoto">🗑️ Elimina foto</button>
   </div>
 </section>
 
@@ -80,7 +82,7 @@ a.btn{display:inline-block;text-decoration:none;color:#fff;background:#0f172a;bo
 
 <script>
 const DB_NAME="FotoGeoDB", DB_VERSION=1, STORE="photos";
-let db, currentOperator="", currentOperatorId="", currentPhotoBlob=null, currentPhotoName="";
+let db, currentOperator="", currentOperatorId="", currentPhotoBlob=null, currentPhotoName="", currentPhotoId=null;
 let currentOperatorPhotos=[];
 
 function openDB(){
@@ -109,15 +111,39 @@ function getOperators(photos){
  return [...map.values()].sort((a,b)=>a.name.localeCompare(b.name));
 }
 function saveOperators(list){localStorage.setItem("fotogeo_operators",JSON.stringify(list))}
+
 async function renderOperators(){
  const photos=await allPhotos(), ops=getOperators(photos);
  if(!ops.length){$("operatorsList").innerHTML="Nessun operatore ancora registrato.";return}
  $("operatorsList").innerHTML=ops.map(o=>`
  <div class="operator">
   <div><div class="operator-name">👤 ${esc(o.name)}</div><div class="count">${o.count} foto</div></div>
-  <button class="secondary" onclick="openGallery(${JSON.stringify(o.name)})">📁 Apri</button>
+  <div class="operator-actions">
+    <button class="secondary" onclick="window.openGallery(${esc(JSON.stringify(o.name))})">📁 Apri</button>
+    <button class="danger" onclick="window.deleteOperator(${esc(JSON.stringify(o.name))})">🗑️</button>
+  </div>
  </div>`).join("");
 }
+
+window.deleteOperator=async function(name){
+ const key=operatorKey(name);
+ if(confirm(`Sei sicuro di voler eliminare l'operatore "${name}" e tutte le sue foto?`)){
+  const photos=await allPhotos();
+  const toDelete=photos.filter(p=>operatorKey(p.operator)===key);
+  for(const p of toDelete){
+    await deletePhoto(p.id);
+  }
+  const ops=getOperators([]).filter(o=>operatorKey(o.name)!==key);
+  saveOperators(ops);
+  if(operatorKey($("operator").value)===key){
+    $("operator").value="";
+    localStorage.removeItem("fotogeo_current_operator");
+    $("gpsStatus").textContent="📍 Seleziona o crea un operatore per continuare.";
+  }
+  renderOperators();
+ }
+}
+
 window.openGallery=async function(name){
  currentOperatorId=operatorKey(name); currentOperator=name;
  $("galleryTitle").textContent=`📁 ${name}`;
@@ -128,10 +154,17 @@ window.openGallery=async function(name){
   <div class="photo-item">
    <img src="${URL.createObjectURL(p.blob)}" alt="">
    <div><b>${esc(new Date(p.created).toLocaleString("it-IT"))}</b><br>${esc(p.lat.toFixed(6))}, ${esc(p.lon.toFixed(6))}
-   <br><button class="danger" style="margin-top:7px;padding:7px 9px;font-size:12px" onclick="removePhoto(${p.id})">Elimina</button></div>
+   <br><button class="danger" style="margin-top:7px;padding:7px 9px;font-size:12px;width:100%" onclick="window.removePhoto(${p.id})">🗑️ Elimina</button></div>
   </div>`).join(""):"<p class='muted'>Nessuna foto per questo operatore.</p>";
 }
-window.removePhoto=async function(id){if(confirm("Eliminare questa fotografia?")){await deletePhoto(id);openGallery(currentOperator);renderOperators()}}
+
+window.removePhoto=async function(id){
+ if(confirm("Eliminare questa fotografia?")){
+  await deletePhoto(id);
+  openGallery(currentOperator);
+  renderOperators();
+ }
+}
 
 $("backOperators").onclick=()=>{$("gallerySection").classList.add("hidden");renderOperators()};
 $("saveOperator").onclick=()=>{
@@ -141,6 +174,7 @@ $("saveOperator").onclick=()=>{
  if(!ops.some(o=>operatorKey(o.name)===operatorKey(n))) {ops.push({name:n,count:0});saveOperators(ops)}
  $("gpsStatus").textContent=`👤 Operatore attivo: ${n}`;renderOperators();
 };
+
 $("takePhoto").onclick=()=>{
  const n=$("operator").value.trim()||localStorage.getItem("fotogeo_current_operator")||"";
  if(!n){alert("Inserisci prima il Nome operatore.");$("operator").focus();return}
@@ -149,7 +183,6 @@ $("takePhoto").onclick=()=>{
  
  if(!navigator.geolocation){alert("Questo browser non supporta la geolocalizzazione.");return}
 
- // 1. Avviamo la richiesta GPS e la salviamo in una "Promise" senza bloccare il codice
  window._gpsPromise = new Promise((resolve, reject) => {
    navigator.geolocation.getCurrentPosition(
      pos => resolve(pos.coords),
@@ -158,7 +191,6 @@ $("takePhoto").onclick=()=>{
    );
  });
 
- // 2. IMPORTANTE: Il click sull'input file deve essere IMMEDIATO (sincrono) per non essere bloccato da iOS/Android
  $("fileInput").click();
 };
 
@@ -171,7 +203,6 @@ $("fileInput").onchange=async e=>{
   $("gpsStatus").textContent="📍 Attesa della posizione GPS...";
   
   try {
-    // 3. Prima di processare l'immagine, attendiamo che il GPS abbia finito di acquisire le coordinate
     const coords = await window._gpsPromise;
     window._gps = coords;
     await processImage(file, coords);
@@ -180,6 +211,7 @@ $("fileInput").onchange=async e=>{
     $("gpsStatus").textContent="⚠️ GPS non disponibile.";
   }
 };
+
 function pad(n){return String(n).padStart(2,"0")}
 async function reverseGeocode(lat,lon){
  try{
@@ -214,12 +246,23 @@ async function processImage(file,coords){
  const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",.92));
  const name=`${date.replaceAll("/","-")}_${time.replaceAll(":","-")}.jpg`;
  const photo={operator:currentOperator,created:Date.now(),lat:coords.latitude,lon:coords.longitude,accuracy:coords.accuracy||0,address,blob,name};
- const id=await addPhoto(photo);photo.id=id;currentPhotoBlob=blob;currentPhotoName=name;
+ const id=await addPhoto(photo);photo.id=id;currentPhotoBlob=blob;currentPhotoName=name;currentPhotoId=id;
  $("preview").src=URL.createObjectURL(blob);$("downloadPhoto").href=URL.createObjectURL(blob);$("downloadPhoto").download=name;
  $("photoInfo").innerHTML=`<b>Operatore:</b> ${esc(currentOperator)}<br><b>Posizione:</b> ${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)}<br><b>Accuratezza:</b> ±${Math.round(coords.accuracy||0)} m${address?`<br><b>Località:</b> ${esc(address)}`:""}`;
  $("resultSection").classList.remove("hidden");$("gallerySection").classList.add("hidden");$("gpsStatus").textContent="✅ Foto geolocalizzata creata.";
  renderOperators();
 }
+
+$("deleteCurrentPhoto").onclick=async()=>{
+ if(currentPhotoId && confirm("Sei sicuro di voler eliminare questa foto appena scattata?")){
+   await deletePhoto(currentPhotoId);
+   currentPhotoId=null; currentPhotoBlob=null; currentPhotoName="";
+   $("resultSection").classList.add("hidden");
+   $("gpsStatus").textContent="🗑️ Foto eliminata.";
+   renderOperators();
+ }
+};
+
 $("sharePhoto").onclick=async()=>{
  if(!currentPhotoBlob)return;
  const file=new File([currentPhotoBlob],currentPhotoName,{type:"image/jpeg"});
@@ -230,11 +273,13 @@ $("sharePhoto").onclick=async()=>{
   alert("Il browser non supporta la condivisione diretta. La foto è stata scaricata; puoi allegarla a WhatsApp.");
  }
 };
+
 $("exportOperator").onclick=async()=>{
  if(!currentOperatorPhotos.length){alert("Nessuna foto da esportare.");return}
  alert("Per mantenere l'app completamente gratuita e senza server, l'esportazione crea un download per ogni foto. Potrai poi condividerle o archiviarle.");
  for(const p of currentOperatorPhotos){const a=document.createElement("a");a.href=URL.createObjectURL(p.blob);a.download=p.name;a.click();await new Promise(r=>setTimeout(r,250))}
 };
+
 (async()=>{
  await openDB();
  const saved=localStorage.getItem("fotogeo_current_operator");if(saved){$("operator").value=saved;currentOperator=saved}
