@@ -145,16 +145,41 @@ $("takePhoto").onclick=()=>{
  const n=$("operator").value.trim()||localStorage.getItem("fotogeo_current_operator")||"";
  if(!n){alert("Inserisci prima il Nome operatore.");$("operator").focus();return}
  currentOperator=n; localStorage.setItem("fotogeo_current_operator",n);
- $("gpsStatus").textContent="📍 Acquisizione posizione GPS...";
+ $("gpsStatus").textContent="📍 Avvio fotocamera e acquisizione GPS in background...";
+ 
  if(!navigator.geolocation){alert("Questo browser non supporta la geolocalizzazione.");return}
- navigator.geolocation.getCurrentPosition(
-   pos=>{$("gpsStatus").textContent="📍 Posizione acquisita. Ora scatta la foto."; $("fileInput").click(); window._gps=pos.coords},
-   err=>{alert("Non è stato possibile ottenere la posizione GPS. Consenti la localizzazione e riprova.");$("gpsStatus").textContent="⚠️ GPS non disponibile.";},
-   {enableHighAccuracy:true,timeout:15000,maximumAge:0}
- );
+
+ // 1. Avviamo la richiesta GPS e la salviamo in una "Promise" senza bloccare il codice
+ window._gpsPromise = new Promise((resolve, reject) => {
+   navigator.geolocation.getCurrentPosition(
+     pos => resolve(pos.coords),
+     err => reject(err),
+     {enableHighAccuracy:true,timeout:15000,maximumAge:0}
+   );
+ });
+
+ // 2. IMPORTANTE: Il click sull'input file deve essere IMMEDIATO (sincrono) per non essere bloccato da iOS/Android
+ $("fileInput").click();
 };
+
 $("newPhoto").onclick=()=>$("takePhoto").click();
-$("fileInput").onchange=async e=>{if(e.target.files[0]&&window._gps)await processImage(e.target.files[0],window._gps)};
+
+$("fileInput").onchange=async e=>{
+  const file = e.target.files[0];
+  if(!file) return;
+  
+  $("gpsStatus").textContent="📍 Attesa della posizione GPS...";
+  
+  try {
+    // 3. Prima di processare l'immagine, attendiamo che il GPS abbia finito di acquisire le coordinate
+    const coords = await window._gpsPromise;
+    window._gps = coords;
+    await processImage(file, coords);
+  } catch (err) {
+    alert("Non è stato possibile ottenere la posizione GPS. Consenti la localizzazione, ricarica la pagina e riprova.");
+    $("gpsStatus").textContent="⚠️ GPS non disponibile.";
+  }
+};
 function pad(n){return String(n).padStart(2,"0")}
 async function reverseGeocode(lat,lon){
  try{
