@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<title>Foto Geo</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f3f4f6;color:#111827}
+header{background:#0f172a;color:#fff;padding:18px 16px;position:sticky;top:0;z-index:5}
+h1{margin:0;font-size:24px}header small{opacity:.75}.wrap{max-width:900px;margin:auto;padding:16px}
+.card{background:#fff;border-radius:18px;padding:16px;margin-bottom:16px;box-shadow:0 2px 12px #00000012}
+label{font-weight:700;display:block;margin-bottom:7px}input,select,button{font:inherit}
+input,select{width:100%;padding:13px;border:1px solid #d1d5db;border-radius:12px;background:#fff}
+button{border:0;border-radius:12px;padding:13px 16px;font-weight:700;cursor:pointer}
+.primary{background:#0f172a;color:#fff}.secondary{background:#e5e7eb}.danger{background:#fee2e2;color:#991b1b}
+.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:130px}
+.big{width:100%;font-size:18px;padding:17px;margin-top:12px}
+.hidden{display:none!important}.muted{color:#6b7280;font-size:14px}
+.status{padding:12px;border-radius:12px;background:#f1f5f9;margin-top:12px;font-size:14px}
+#preview{width:100%;border-radius:14px;background:#111;display:block;max-height:65vh;object-fit:contain}
+.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
+.photo-item{background:#f8fafc;border-radius:14px;overflow:hidden;border:1px solid #e5e7eb}
+.photo-item img{width:100%;aspect-ratio:1;object-fit:cover;display:block}.photo-item div{padding:9px;font-size:12px}
+.pill{display:inline-block;background:#e2e8f0;border-radius:999px;padding:5px 9px;font-size:12px;margin:3px}
+.operator{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #e5e7eb}
+.operator:last-child{border-bottom:0}.operator-name{font-weight:700}.count{font-size:13px;color:#64748b}
+a.btn{display:inline-block;text-decoration:none;color:#fff;background:#0f172a;border-radius:12px;padding:11px 14px;font-weight:700}
+.notice{font-size:13px;color:#475569;line-height:1.45}
+</style>
+</head>
+<body>
+<header><h1>📍 FOTO GEO</h1><small>Fotografie con operatore, data, ora e posizione GPS</small></header>
+<main class="wrap">
+
+<section class="card">
+  <label for="operator">Nome operatore</label>
+  <div class="row">
+    <input id="operator" placeholder="Es. Mario Rossi" autocomplete="name">
+    <button class="secondary" id="saveOperator">Salva operatore</button>
+  </div>
+  <button class="primary big" id="takePhoto">📷 SCATTA FOTO</button>
+  <input id="fileInput" type="file" accept="image/*" capture="environment" class="hidden">
+  <div id="gpsStatus" class="status">📍 La posizione GPS verrà acquisita quando scatti la foto.</div>
+</section>
+
+<section class="card">
+  <h2>👥 Operatori</h2>
+  <div id="operatorsList" class="muted">Nessun operatore ancora registrato.</div>
+</section>
+
+<section id="gallerySection" class="card hidden">
+  <h2 id="galleryTitle">📁 Foto operatore</h2>
+  <div class="row" style="margin-bottom:12px">
+    <button class="secondary" id="backOperators">← Operatori</button>
+    <button class="primary" id="exportOperator">📥 Esporta foto</button>
+  </div>
+  <div id="gallery" class="photo-grid"></div>
+</section>
+
+<section id="resultSection" class="card hidden">
+  <h2>Anteprima</h2>
+  <img id="preview" alt="Anteprima foto geolocalizzata">
+  <div id="photoInfo" class="status"></div>
+  <div class="row" style="margin-top:12px">
+    <button class="secondary" id="newPhoto">📷 Nuova foto</button>
+    <button class="primary" id="sharePhoto">📤 Condividi</button>
+    <a id="downloadPhoto" class="btn" download>💾 Salva</a>
+  </div>
+</section>
+
+<section class="card">
+  <div class="notice">
+    <b>Privacy:</b> le foto e i nomi degli operatori vengono conservati localmente nel browser.
+    La posizione viene usata per creare la sovrimpressione. Per ottenere l'indirizzo testuale
+    l'app può interrogare un servizio di geocoding pubblico.
+  </div>
+</section>
+</main>
+
+<script>
+const DB_NAME="FotoGeoDB", DB_VERSION=1, STORE="photos";
+let db, currentOperator="", currentOperatorId="", currentPhotoBlob=null, currentPhotoName="";
+let currentOperatorPhotos=[];
+
+function openDB(){
+ return new Promise((resolve,reject)=>{
+  const r=indexedDB.open(DB_NAME,DB_VERSION);
+  r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE)){
+    const s=r.result.createObjectStore(STORE,{keyPath:"id",autoIncrement:true});
+    s.createIndex("operator","operator",{unique:false});
+  }};
+  r.onsuccess=()=>{db=r.result;resolve(db)}; r.onerror=()=>reject(r.error);
+ });
+}
+function tx(mode="readonly"){return db.transaction(STORE,mode).objectStore(STORE)}
+function allPhotos(){return new Promise((res,rej)=>{let r=tx().getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function addPhoto(o){return new Promise((res,rej)=>{let r=tx("readwrite").add(o);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+function deletePhoto(id){return new Promise((res,rej)=>{let r=tx("readwrite").delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
+
+const $=id=>document.getElementById(id);
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function operatorKey(name){return name.trim().toLowerCase().replace(/\s+/g," ")}
+function getOperators(photos){
+ const map=new Map();
+ photos.forEach(p=>{const k=operatorKey(p.operator); if(!map.has(k))map.set(k,{name:p.operator,count:0});map.get(k).count++});
+ const saved=localStorage.getItem("fotogeo_operators");
+ if(saved) try{JSON.parse(saved).forEach(o=>{if(!map.has(operatorKey(o.name)))map.set(operatorKey(o.name),{name:o.name,count:0})})}catch(e){}
+ return [...map.values()].sort((a,b)=>a.name.localeCompare(b.name));
+}
+function saveOperators(list){localStorage.setItem("fotogeo_operators",JSON.stringify(list))}
+async function renderOperators(){
+ const photos=await allPhotos(), ops=getOperators(photos);
+ if(!ops.length){$("operatorsList").innerHTML="Nessun operatore ancora registrato.";return}
+ $("operatorsList").innerHTML=ops.map(o=>`
+ <div class="operator">
+  <div><div class="operator-name">👤 ${esc(o.name)}</div><div class="count">${o.count} foto</div></div>
+  <button class="secondary" onclick="openGallery(${JSON.stringify(o.name)})">📁 Apri</button>
+ </div>`).join("");
+}
+window.openGallery=async function(name){
+ currentOperatorId=operatorKey(name); currentOperator=name;
+ $("galleryTitle").textContent=`📁 ${name}`;
+ $("gallerySection").classList.remove("hidden"); $("resultSection").classList.add("hidden");
+ const photos=(await allPhotos()).filter(p=>operatorKey(p.operator)===currentOperatorId).sort((a,b)=>b.created-a.created);
+ currentOperatorPhotos=photos;
+ $("gallery").innerHTML=photos.length?photos.map(p=>`
+  <div class="photo-item">
+   <img src="${URL.createObjectURL(p.blob)}" alt="">
+   <div><b>${esc(new Date(p.created).toLocaleString("it-IT"))}</b><br>${esc(p.lat.toFixed(6))}, ${esc(p.lon.toFixed(6))}
+   <br><button class="danger" style="margin-top:7px;padding:7px 9px;font-size:12px" onclick="removePhoto(${p.id})">Elimina</button></div>
+  </div>`).join(""):"<p class='muted'>Nessuna foto per questo operatore.</p>";
+}
+window.removePhoto=async function(id){if(confirm("Eliminare questa fotografia?")){await deletePhoto(id);openGallery(currentOperator);renderOperators()}}
+
+$("backOperators").onclick=()=>{$("gallerySection").classList.add("hidden");renderOperators()};
+$("saveOperator").onclick=()=>{
+ const n=$("operator").value.trim(); if(!n){alert("Inserisci il nome dell'operatore.");return}
+ currentOperator=n; localStorage.setItem("fotogeo_current_operator",n);
+ const photosCache=[]; const ops=getOperators(photosCache);
+ if(!ops.some(o=>operatorKey(o.name)===operatorKey(n))) {ops.push({name:n,count:0});saveOperators(ops)}
+ $("gpsStatus").textContent=`👤 Operatore attivo: ${n}`;renderOperators();
+};
+$("takePhoto").onclick=()=>{
+ const n=$("operator").value.trim()||localStorage.getItem("fotogeo_current_operator")||"";
+ if(!n){alert("Inserisci prima il Nome operatore.");$("operator").focus();return}
+ currentOperator=n; localStorage.setItem("fotogeo_current_operator",n);
+ $("gpsStatus").textContent="📍 Acquisizione posizione GPS...";
+ if(!navigator.geolocation){alert("Questo browser non supporta la geolocalizzazione.");return}
+ navigator.geolocation.getCurrentPosition(
+   pos=>{$("gpsStatus").textContent="📍 Posizione acquisita. Ora scatta la foto."; $("fileInput").click(); window._gps=pos.coords},
+   err=>{alert("Non è stato possibile ottenere la posizione GPS. Consenti la localizzazione e riprova.");$("gpsStatus").textContent="⚠️ GPS non disponibile.";},
+   {enableHighAccuracy:true,timeout:15000,maximumAge:0}
+ );
+};
+$("newPhoto").onclick=()=>$("takePhoto").click();
+$("fileInput").onchange=async e=>{if(e.target.files[0]&&window._gps)await processImage(e.target.files[0],window._gps)};
+function pad(n){return String(n).padStart(2,"0")}
+async function reverseGeocode(lat,lon){
+ try{
+  const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=18&addressdetails=1`,{headers:{"Accept-Language":"it"}});
+  if(!r.ok)return "";
+  const j=await r.json(); return j.display_name||"";
+ }catch(e){return ""}
+}
+async function processImage(file,coords){
+ const url=URL.createObjectURL(file), img=new Image();
+ await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url});
+ const c=document.createElement("canvas"), ctx=c.getContext("2d");
+ c.width=img.naturalWidth;c.height=img.naturalHeight;ctx.drawImage(img,0,0);
+ const now=new Date(), date=`${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()}`, time=`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+ $("gpsStatus").textContent="📍 Recupero località...";
+ const address=await reverseGeocode(coords.latitude,coords.longitude);
+ const lines=[
+  `OPERATORE: ${currentOperator}`,
+  `${date} • ${time}`,
+  `COORDINATE: ${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)}`,
+  `ACCURATEZZA GPS: ±${Math.round(coords.accuracy||0)} m`
+ ];
+ if(address)lines.unshift(`📍 ${address}`);
+ const scale=Math.max(1,img.naturalWidth/1200), fs=Math.max(22,Math.round(24*scale)), padX=Math.round(22*scale), lineH=Math.round(fs*1.45), boxH=padX+lineH*lines.length+padX;
+ ctx.fillStyle="rgba(0,0,0,.70)";ctx.fillRect(0,c.height-boxH,c.width,boxH);
+ ctx.font=`600 ${fs}px -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif`;ctx.fillStyle="#fff";ctx.textBaseline="top";
+ lines.forEach((line,i)=>{
+   let max=c.width-padX*2, text=line;
+   while(ctx.measureText(text).width>max&&text.length>10)text=text.slice(0,-1);
+   ctx.fillText(text,padX,c.height-boxH+padX+i*lineH);
+ });
+ const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",.92));
+ const name=`${date.replaceAll("/","-")}_${time.replaceAll(":","-")}.jpg`;
+ const photo={operator:currentOperator,created:Date.now(),lat:coords.latitude,lon:coords.longitude,accuracy:coords.accuracy||0,address,blob,name};
+ const id=await addPhoto(photo);photo.id=id;currentPhotoBlob=blob;currentPhotoName=name;
+ $("preview").src=URL.createObjectURL(blob);$("downloadPhoto").href=URL.createObjectURL(blob);$("downloadPhoto").download=name;
+ $("photoInfo").innerHTML=`<b>Operatore:</b> ${esc(currentOperator)}<br><b>Posizione:</b> ${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)}<br><b>Accuratezza:</b> ±${Math.round(coords.accuracy||0)} m${address?`<br><b>Località:</b> ${esc(address)}`:""}`;
+ $("resultSection").classList.remove("hidden");$("gallerySection").classList.add("hidden");$("gpsStatus").textContent="✅ Foto geolocalizzata creata.";
+ renderOperators();
+}
+$("sharePhoto").onclick=async()=>{
+ if(!currentPhotoBlob)return;
+ const file=new File([currentPhotoBlob],currentPhotoName,{type:"image/jpeg"});
+ if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
+  try{await navigator.share({title:"Foto Geo",text:`Foto geolocalizzata - ${currentOperator}`,files:[file]})}catch(e){}
+ }else{
+  const a=document.createElement("a");a.href=URL.createObjectURL(currentPhotoBlob);a.download=currentPhotoName;a.click();
+  alert("Il browser non supporta la condivisione diretta. La foto è stata scaricata; puoi allegarla a WhatsApp.");
+ }
+};
+$("exportOperator").onclick=async()=>{
+ if(!currentOperatorPhotos.length){alert("Nessuna foto da esportare.");return}
+ alert("Per mantenere l'app completamente gratuita e senza server, l'esportazione crea un download per ogni foto. Potrai poi condividerle o archiviarle.");
+ for(const p of currentOperatorPhotos){const a=document.createElement("a");a.href=URL.createObjectURL(p.blob);a.download=p.name;a.click();await new Promise(r=>setTimeout(r,250))}
+};
+(async()=>{
+ await openDB();
+ const saved=localStorage.getItem("fotogeo_current_operator");if(saved){$("operator").value=saved;currentOperator=saved}
+ renderOperators();
+})();
+</script>
+</body>
+</html>
