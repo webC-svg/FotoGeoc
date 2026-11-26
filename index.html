@@ -1,81 +1,781 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="utf-8">
+<meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#155eef">
 <title>Foto Geo</title>
+
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f3f5f9;color:#182230;font:16px system-ui,-apple-system,Segoe UI,Arial}
-main{max-width:820px;margin:auto;padding:18px 14px 40px}h1{margin:4px 0;font-size:27px}.intro{color:#667085;font-size:14px;margin:0 0 18px}
+*{box-sizing:border-box}
+body{margin:0;background:#f3f5f9;color:#182230;font:16px system-ui,-apple-system,Segoe UI,Arial}
+main{max-width:820px;margin:auto;padding:18px 14px 40px}
+h1{margin:4px 0;font-size:27px}
+.intro{color:#667085;font-size:14px;margin:0 0 18px}
 .card{background:#fff;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 3px 14px #10182810}
-label{display:block;font-weight:650;font-size:14px;margin-bottom:7px}input,select,button{font:inherit}
+label{display:block;font-weight:650;font-size:14px;margin-bottom:7px}
+input,select,button{font:inherit}
 input[type=text],select{width:100%;height:48px;border:1px solid #d0d5dd;border-radius:11px;padding:0 12px;background:#fff;font-size:16px}
-button{border:0;border-radius:11px;min-height:44px;padding:10px 14px;font-weight:650;cursor:pointer}.primary{background:#155eef;color:#fff;width:100%;min-height:54px;font-size:17px}.secondary{background:#eef4ff;color:#1849a9}.danger{background:#fff0f0;color:#b42318}
-.row{display:flex;gap:9px;flex-wrap:wrap;margin-top:9px}.row>*{flex:1}.status{font-size:14px;color:#475467;line-height:1.5;margin-top:11px;min-height:22px}
-.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.chip{background:#f2f4f7;border:1px solid #e4e7ec;border-radius:20px;font-size:13px;padding:7px 11px;min-height:36px}
+button{border:0;border-radius:11px;min-height:44px;padding:10px 14px;font-weight:650;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+.primary{background:#155eef;color:#fff;width:100%;min-height:54px;font-size:17px}
+.secondary{background:#eef4ff;color:#1849a9}
+.danger{background:#fff0f0;color:#b42318}
+.row{display:flex;gap:9px;flex-wrap:wrap;margin-top:9px}
+.row>*{flex:1;min-width:130px}
+.status{font-size:14px;color:#475467;line-height:1.5;margin-top:11px;min-height:22px}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.chip{background:#f2f4f7;border:1px solid #e4e7ec;border-radius:20px;font-size:13px;padding:7px 11px;min-height:36px}
 .hint{font-size:13px;line-height:1.5;color:#6941c6;background:#f9f5ff;border:1px solid #e9d7fe;border-radius:11px;padding:11px;margin-top:12px}
-.gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.photo{border:1px solid #e4e7ec;border-radius:12px;overflow:hidden;min-width:0}
-.photo img{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:#f2f4f7}.meta{font-size:12px;line-height:1.45;padding:9px;overflow-wrap:anywhere}
-.actions{display:flex;gap:6px;padding:0 8px 8px}.actions button{flex:1;padding:7px 5px;font-size:13px;min-height:38px}
-.empty{background:#f9fafb;color:#667085;text-align:center;padding:24px;border-radius:12px;grid-column:1/-1}.small{font-size:12px;color:#667085}
+.gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.photo{border:1px solid #e4e7ec;border-radius:12px;overflow:hidden;min-width:0}
+.photo img{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:#f2f4f7}
+.meta{font-size:12px;line-height:1.45;padding:9px;overflow-wrap:anywhere}
+.actions{display:flex;gap:6px;padding:0 8px 8px}
+.actions button{flex:1;padding:7px 5px;font-size:13px;min-height:38px}
+.empty{background:#f9fafb;color:#667085;text-align:center;padding:24px;border-radius:12px;grid-column:1/-1}
+.small{font-size:12px;color:#667085}
 @media(min-width:620px){.gallery{grid-template-columns:repeat(3,minmax(0,1fr))}}
 </style>
 </head>
-<body><main>
+
+<body>
+<main>
+
 <h1>📍 Foto Geo</h1>
 <p class="intro">Fotografie con operatore, posizione GPS, precisione e data/ora.</p>
 
 <section class="card">
 <label for="operator">Nome operatore</label>
 <input id="operator" type="text" placeholder="Inserisci nome e cognome" autocomplete="name">
-<div class="row"><button id="saveOperator" class="secondary" type="button">Salva operatore</button><button id="clearOperator" class="danger" type="button">Svuota campo</button></div>
+
+<div class="row">
+<button id="saveOperator" class="secondary" type="button">Salva operatore</button>
+<button id="clearOperator" class="danger" type="button">Svuota campo</button>
+</div>
+
 <div id="operatorChips" class="chips"></div>
 </section>
 
 <section class="card">
 <button id="takePhoto" class="primary" type="button">📷 Scatta / scegli una foto</button>
+
 <input id="photoInput" type="file" accept="image/*" capture="environment" aria-label="Scatta una foto" style="position:fixed;left:-10000px;top:0;width:1px;height:1px;opacity:0">
-<div id="status" class="status" role="status" aria-live="polite">Inserisci il nome dell'operatore e premi il pulsante. Consenti fotocamera e posizione quando richiesto.</div>
+
+<div id="status" class="status" role="status" aria-live="polite">
+Inserisci il nome dell'operatore e premi il pulsante. Consenti fotocamera e posizione quando richiesto.
+</div>
+
 <div class="small">Se il telefono propone fotocamera o galleria, scegli Fotocamera per un nuovo scatto.</div>
 </section>
 
 <section class="card">
-<div class="row" style="align-items:end"><div style="flex:2"><label for="operatorFolder">Archivio dell'operatore</label><select id="operatorFolder"><option value="">Nessun operatore</option></select></div><button id="exportPhotos" class="secondary" type="button">Esporta foto</button></div>
-<p class="hint">Le foto sono salvate nel browser di questo dispositivo. Usa <b>Condividi</b> per inviarle con WhatsApp. Esporta periodicamente: cancellando i dati del browser o cambiando telefono potresti perdere l'archivio.</p>
+
+<div class="row" style="align-items:end">
+<div style="flex:2">
+<label for="operatorFolder">Archivio dell'operatore</label>
+<select id="operatorFolder">
+<option value="">Nessun operatore</option>
+</select>
+</div>
+<button id="exportPhotos" class="secondary" type="button">Esporta foto</button>
+</div>
+
+<div class="row">
+<button id="deleteOldPhotos" class="danger" type="button">🗑️ Elimina foto precedenti</button>
+<button id="editOperator" class="secondary" type="button">✏️ Modifica operatore</button>
+<button id="deleteOperator" class="danger" type="button">❌ Elimina operatore</button>
+</div>
+
+<p class="hint">
+Le foto sono salvate nel browser di questo dispositivo. Usa <b>Condividi</b> per inviarle con WhatsApp. Esporta periodicamente: cancellando i dati del browser o cambiando telefono potresti perdere l'archivio.
+</p>
+
 </section>
 
-<section class="card"><h2 style="font-size:19px;margin:0 0 12px">Le tue foto</h2><div id="gallery" class="gallery"><div class="empty">Caricamento archivio…</div></div></section>
+<section class="card">
+<h2 style="font-size:19px;margin:0 0 12px">Le tue foto</h2>
+<div id="gallery" class="gallery">
+<div class="empty">Caricamento archivio…</div>
+</div>
+</section>
+
 </main>
+
 <script>
 "use strict";
+
 (()=>{
-const $=id=>document.getElementById(id),opInput=$("operator"),photoInput=$("photoInput"),take=$("takePhoto"),statusBox=$("status"),folder=$("operatorFolder"),gallery=$("gallery");
-const DB="FotoGeoCrossDevice",STORE="photos";let db=null,busy=false;
+const $=id=>document.getElementById(id);
+
+const opInput=$("operator");
+const photoInput=$("photoInput");
+const take=$("takePhoto");
+const statusBox=$("status");
+const folder=$("operatorFolder");
+const gallery=$("gallery");
+
+const DB="FotoGeoCrossDevice";
+const STORE="photos";
+
+let db=null;
+let busy=false;
+
 const say=s=>statusBox.textContent=s;
-function names(){try{return JSON.parse(localStorage.getItem("fotoGeo.operators")||"[]")}catch(e){return[]}}
-function remember(n){if(!n)return;let a=names().filter(x=>x.toLocaleLowerCase("it")!==n.toLocaleLowerCase("it"));a.unshift(n);localStorage.setItem("fotoGeo.operators",JSON.stringify(a.slice(0,50)));localStorage.setItem("fotoGeo.currentOperator",n);renderControls()}
-function renderControls(){let a=names(),old=folder.value,chips=$("operatorChips");chips.replaceChildren();a.forEach(n=>{let b=document.createElement("button");b.className="chip";b.textContent=n;b.type="button";b.onclick=()=>{opInput.value=n;folder.value=n;loadGallery()};chips.append(b)});folder.replaceChildren();if(!a.length){folder.add(new Option("Nessun operatore",""));return}a.forEach(n=>folder.add(new Option(n,n)));let pref=localStorage.getItem("fotoGeo.currentOperator");folder.value=a.includes(old)?old:(a.includes(pref)?pref:a[0])}
-function openDB(){return new Promise((ok,no)=>{let r=indexedDB.open(DB,1);r.onupgradeneeded=()=>{let d=r.result;if(!d.objectStoreNames.contains(STORE)){let s=d.createObjectStore(STORE,{keyPath:"id",autoIncrement:true});s.createIndex("operator","operator")}};r.onsuccess=()=>{db=r.result;ok(db)};r.onerror=()=>no(r.error)})}
-function request(mode,fn){return new Promise((ok,no)=>{let s=db.transaction(STORE,mode).objectStore(STORE),q=fn(s);q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)})}
-const add=x=>request("readwrite",s=>s.add(x)),remove=id=>request("readwrite",s=>s.delete(id)),all=n=>request("readonly",s=>s.index("operator").getAll(n));
-const date=t=>new Intl.DateTimeFormat("it-IT",{dateStyle:"short",timeStyle:"medium"}).format(new Date(t)),coord=n=>Number(n).toFixed(6);
-const safe=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9_-]+/gi,"_").replace(/^_+|_+$/g,"")||"operatore";
-const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-function filename(r){return `FotoGeo_${safe(r.operator)}_${r.created}.jpg`}
-function download(blob,name){let u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000)}
-async function share(blob,name){let f=new File([blob],name,{type:"image/jpeg"});if(navigator.share){try{if(!navigator.canShare||navigator.canShare({files:[f]})){await navigator.share({title:"Foto geolocalizzata",files:[f]});return}}catch(e){if(e.name==="AbortError")return}}download(blob,name);say("Foto scaricata. Se la condivisione non si apre, allegala manualmente in WhatsApp.")}
-async function loadGallery(){gallery.replaceChildren();let n=folder.value;if(!n){gallery.innerHTML='<div class="empty">Salva o seleziona un operatore.</div>';return}try{let a=(await all(n)).sort((x,y)=>y.created-x.created);if(!a.length){gallery.innerHTML='<div class="empty">Nessuna foto per questo operatore.</div>';return}a.forEach(r=>{let c=document.createElement("article");c.className="photo";let im=document.createElement("img");im.alt="Foto geolocalizzata";im.src=URL.createObjectURL(r.blob);let m=document.createElement("div");m.className="meta";m.innerHTML=`<b>${esc(r.operator)}</b><br>📍 ${coord(r.lat)}, ${coord(r.lon)}<br>🎯 Precisione: circa ${Math.round(r.accuracy)} m<br>🕒 ${esc(date(r.created))}`;let ac=document.createElement("div");ac.className="actions";let sh=document.createElement("button");sh.className="secondary";sh.textContent="Condividi";sh.onclick=()=>share(r.blob,filename(r));let de=document.createElement("button");de.className="danger";de.textContent="Elimina";de.onclick=async()=>{if(confirm("Eliminare questa foto?")){await remove(r.id);URL.revokeObjectURL(im.src);loadGallery()}};ac.append(sh,de);c.append(im,m,ac);gallery.append(c)})}catch(e){console.error(e);gallery.innerHTML='<div class="empty">Errore nella lettura dell’archivio.</div>'}}
-function position(){return new Promise((ok,no)=>{if(!navigator.geolocation)return no(new Error("Geolocalizzazione non supportata."));navigator.geolocation.getCurrentPosition(p=>ok({lat:p.coords.latitude,lon:p.coords.longitude,accuracy:p.coords.accuracy}),no,{enableHighAccuracy:true,timeout:30000,maximumAge:0})})}
-function imageFrom(file){return new Promise((ok,no)=>{let u=URL.createObjectURL(file),i=new Image();i.onload=()=>{URL.revokeObjectURL(u);ok(i)};i.onerror=()=>{URL.revokeObjectURL(u);no(new Error("Impossibile leggere questa immagine."))};i.src=u})}
-function stamp(img,r){let scale=Math.min(1,2400/Math.max(img.naturalWidth,img.naturalHeight)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(img.naturalWidth*scale));c.height=Math.max(1,Math.round(img.naturalHeight*scale));let x=c.getContext("2d",{alpha:false});if(!x)throw Error("Elaborazione immagine non disponibile");x.drawImage(img,0,0,c.width,c.height);let w=c.width,h=c.height,pad=Math.max(14,Math.round(w*.018)),font=Math.max(17,Math.round(w*.018)),line=Math.round(font*1.35);let lines=[`OPERATORE: ${r.operator}`,`GPS: ${coord(r.lat)}, ${coord(r.lon)}`,`PRECISIONE GPS: circa ${Math.round(r.accuracy)} m`,`DATA/ORA: ${date(r.created)}`];x.font=`600 ${font}px Arial`;let wrapped=[],max=w-pad*2;for(let raw of lines){let cur="";for(let word of raw.split(/\s+/)){let test=cur?cur+" "+word:word;if(cur&&x.measureText(test).width>max){wrapped.push(cur);cur=word}else cur=test}if(cur)wrapped.push(cur)}let bh=pad*2+line*wrapped.length,y=h-bh;x.fillStyle="rgba(0,0,0,.72)";x.fillRect(0,y,w,bh);x.fillStyle="#fff";x.font=`600 ${font}px Arial`;wrapped.forEach((t,i)=>x.fillText(t,pad,y+pad+font+i*line,max));return new Promise((ok,no)=>c.toBlob(b=>b?ok(b):no(Error("Creazione foto non riuscita")),"image/jpeg",.92))}
-function geoMessage(e){if(e.code===1)return"Permesso posizione negato: abilita la posizione per questo sito nelle impostazioni del browser.";if(e.code===2)return"Posizione non disponibile: attiva la localizzazione e riprova.";if(e.code===3)return"Il GPS ha impiegato troppo tempo. Riprova.";return e.message||"Errore durante l'acquisizione GPS."}
-take.addEventListener("click",()=>{if(busy)return;let n=opInput.value.trim();if(!n){alert("Inserisci prima il nome dell'operatore.");opInput.focus();return}if(!window.isSecureContext&&location.hostname!=="localhost"){alert("Fotocamera e GPS richiedono HTTPS. Pubblica il sito su GitHub Pages.");return}remember(n);say("Apertura fotocamera…");photoInput.click()});
-photoInput.addEventListener("change",async()=>{let f=photoInput.files&&photoInput.files[0];photoInput.value="";if(!f)return;let n=opInput.value.trim();if(!n)return;busy=true;take.disabled=true;try{say("Acquisizione posizione GPS…");let g=await position();say("Preparazione foto…");let im=await imageFrom(f),r={operator:n,...g,created:Date.now()};let blob=await stamp(im,r);say("Salvataggio archivio…");await add({...r,blob});folder.value=n;await loadGallery();say("Foto salvata. Puoi condividerla con WhatsApp.")}catch(e){console.error(e);let m=geoMessage(e);say("Operazione non completata: "+m);alert(m)}finally{busy=false;take.disabled=false}});
-$("saveOperator").onclick=()=>{let n=opInput.value.trim();if(!n)return alert("Inserisci il nome dell'operatore.");remember(n);folder.value=n;loadGallery();say("Operatore salvato su questo dispositivo.")};
-$("clearOperator").onclick=()=>{opInput.value="";say("Campo operatore svuotato.")};
-folder.onchange=loadGallery;
-$("exportPhotos").onclick=async()=>{let n=folder.value;if(!n)return alert("Seleziona un operatore.");let a=(await all(n)).sort((x,y)=>x.created-y.created);if(!a.length)return alert("Nessuna foto da esportare.");for(let r of a){download(r.blob,filename(r));await new Promise(ok=>setTimeout(ok,500))}say("Esportazione avviata. Se richiesto, autorizza i download multipli.")};
-(async()=>{let saved=localStorage.getItem("fotoGeo.currentOperator");if(saved)opInput.value=saved;try{await openDB();renderControls();if(saved&&names().includes(saved))folder.value=saved;await loadGallery()}catch(e){console.error(e);say("Archivio locale non disponibile: "+(e.message||"controlla il browser."))}})();
+
+function names(){
+  try{
+    return JSON.parse(localStorage.getItem("fotoGeo.operators")||"[]");
+  }catch(e){
+    return [];
+  }
+}
+
+function remember(n){
+  if(!n)return;
+
+  let a=names().filter(x=>
+    x.toLocaleLowerCase("it")!==n.toLocaleLowerCase("it")
+  );
+
+  a.unshift(n);
+
+  localStorage.setItem("fotoGeo.operators",JSON.stringify(a.slice(0,50)));
+  localStorage.setItem("fotoGeo.currentOperator",n);
+
+  renderControls();
+}
+
+function renderControls(){
+  let a=names();
+  let old=folder.value;
+  let chips=$("operatorChips");
+
+  chips.replaceChildren();
+
+  a.forEach(n=>{
+    let b=document.createElement("button");
+    b.className="chip";
+    b.textContent=n;
+    b.type="button";
+
+    b.onclick=()=>{
+      opInput.value=n;
+      folder.value=n;
+      loadGallery();
+    };
+
+    chips.append(b);
+  });
+
+  folder.replaceChildren();
+
+  if(!a.length){
+    folder.add(new Option("Nessun operatore",""));
+    return;
+  }
+
+  a.forEach(n=>folder.add(new Option(n,n)));
+
+  let pref=localStorage.getItem("fotoGeo.currentOperator");
+
+  folder.value=a.includes(old)?old:(a.includes(pref)?pref:a[0]);
+}
+
+function openDB(){
+  return new Promise((ok,no)=>{
+    let r=indexedDB.open(DB,1);
+
+    r.onupgradeneeded=()=>{
+      let d=r.result;
+
+      if(!d.objectStoreNames.contains(STORE)){
+        let s=d.createObjectStore(STORE,{keyPath:"id",autoIncrement:true});
+        s.createIndex("operator","operator");
+      }
+    };
+
+    r.onsuccess=()=>{
+      db=r.result;
+      ok(db);
+    };
+
+    r.onerror=()=>no(r.error);
+  });
+}
+
+function request(mode,fn){
+  return new Promise((ok,no)=>{
+    let s=db.transaction(STORE,mode).objectStore(STORE);
+    let q=fn(s);
+
+    q.onsuccess=()=>ok(q.result);
+    q.onerror=()=>no(q.error);
+  });
+}
+
+const add=x=>request("readwrite",s=>s.add(x));
+const remove=id=>request("readwrite",s=>s.delete(id));
+const all=n=>request("readonly",s=>s.index("operator").getAll(n));
+
+// Aggiornamento di più foto
+function updateRecords(records){
+  return new Promise((ok,no)=>{
+    let tx=db.transaction(STORE,"readwrite");
+    let s=tx.objectStore(STORE);
+
+    records.forEach(r=>s.put(r));
+
+    tx.oncomplete=()=>ok();
+    tx.onerror=()=>no(tx.error);
+    tx.onabort=()=>no(tx.error||new Error("Aggiornamento non riuscito."));
+  });
+}
+
+// Eliminazione di più foto
+function deleteRecords(records){
+  return new Promise((ok,no)=>{
+    let tx=db.transaction(STORE,"readwrite");
+    let s=tx.objectStore(STORE);
+
+    records.forEach(r=>s.delete(r.id));
+
+    tx.oncomplete=()=>ok();
+    tx.onerror=()=>no(tx.error);
+    tx.onabort=()=>no(tx.error||new Error("Eliminazione non riuscita."));
+  });
+}
+
+const date=t=>new Intl.DateTimeFormat("it-IT",{
+  dateStyle:"short",
+  timeStyle:"medium"
+}).format(new Date(t));
+
+const coord=n=>Number(n).toFixed(6);
+
+const safe=s=>s.normalize("NFD")
+  .replace(/[\u0300-\u036f]/g,"")
+  .replace(/[^a-z0-9_-]+/gi,"_")
+  .replace(/^_+|_+$/g,"")||"operatore";
+
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({
+  "&":"&amp;",
+  "<":"&lt;",
+  ">":"&gt;",
+  '"':"&quot;",
+  "'":"&#39;"
+}[c]));
+
+function filename(r){
+  return `FotoGeo_${safe(r.operator)}_${r.created}.jpg`;
+}
+
+function download(blob,name){
+  let u=URL.createObjectURL(blob);
+  let a=document.createElement("a");
+
+  a.href=u;
+  a.download=name;
+
+  document.body.append(a);
+  a.click();
+  a.remove();
+
+  setTimeout(()=>URL.revokeObjectURL(u),30000);
+}
+
+async function share(blob,name){
+  let f=new File([blob],name,{type:"image/jpeg"});
+
+  if(navigator.share){
+    try{
+      if(!navigator.canShare||navigator.canShare({files:[f]})){
+        await navigator.share({
+          title:"Foto geolocalizzata",
+          files:[f]
+        });
+        return;
+      }
+    }catch(e){
+      if(e.name==="AbortError")return;
+    }
+  }
+
+  download(blob,name);
+  say("Foto scaricata. Se la condivisione non si apre, allegala manualmente in WhatsApp.");
+}
+
+async function loadGallery(){
+  gallery.replaceChildren();
+
+  let n=folder.value;
+
+  if(!n){
+    gallery.innerHTML='<div class="empty">Salva o seleziona un operatore.</div>';
+    return;
+  }
+
+  try{
+    let a=(await all(n)).sort((x,y)=>y.created-x.created);
+
+    if(!a.length){
+      gallery.innerHTML='<div class="empty">Nessuna foto per questo operatore.</div>';
+      return;
+    }
+
+    a.forEach(r=>{
+      let c=document.createElement("article");
+      c.className="photo";
+
+      let im=document.createElement("img");
+      im.alt="Foto geolocalizzata";
+      im.src=URL.createObjectURL(r.blob);
+
+      let m=document.createElement("div");
+      m.className="meta";
+
+      m.innerHTML=`
+        <b>${esc(r.operator)}</b><br>
+        📍 ${coord(r.lat)}, ${coord(r.lon)}<br>
+        🎯 Precisione: circa ${Math.round(r.accuracy)} m<br>
+        🕒 ${esc(date(r.created))}
+      `;
+
+      let ac=document.createElement("div");
+      ac.className="actions";
+
+      let sh=document.createElement("button");
+      sh.className="secondary";
+      sh.textContent="Condividi";
+      sh.onclick=()=>share(r.blob,filename(r));
+
+      let de=document.createElement("button");
+      de.className="danger";
+      de.textContent="Elimina";
+
+      de.onclick=async()=>{
+        if(confirm("Eliminare questa foto?")){
+          await remove(r.id);
+          URL.revokeObjectURL(im.src);
+          loadGallery();
+        }
+      };
+
+      ac.append(sh,de);
+      c.append(im,m,ac);
+      gallery.append(c);
+    });
+
+  }catch(e){
+    console.error(e);
+    gallery.innerHTML='<div class="empty">Errore nella lettura dell’archivio.</div>';
+  }
+}
+
+function position(){
+  return new Promise((ok,no)=>{
+    if(!navigator.geolocation){
+      return no(new Error("Geolocalizzazione non supportata."));
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      p=>ok({
+        lat:p.coords.latitude,
+        lon:p.coords.longitude,
+        accuracy:p.coords.accuracy
+      }),
+      no,
+      {
+        enableHighAccuracy:true,
+        timeout:30000,
+        maximumAge:0
+      }
+    );
+  });
+}
+
+function imageFrom(file){
+  return new Promise((ok,no)=>{
+    let u=URL.createObjectURL(file);
+    let i=new Image();
+
+    i.onload=()=>{
+      URL.revokeObjectURL(u);
+      ok(i);
+    };
+
+    i.onerror=()=>{
+      URL.revokeObjectURL(u);
+      no(new Error("Impossibile leggere questa immagine."));
+    };
+
+    i.src=u;
+  });
+}
+
+function stamp(img,r){
+  let scale=Math.min(1,2400/Math.max(img.naturalWidth,img.naturalHeight));
+  let c=document.createElement("canvas");
+
+  c.width=Math.max(1,Math.round(img.naturalWidth*scale));
+  c.height=Math.max(1,Math.round(img.naturalHeight*scale));
+
+  let x=c.getContext("2d",{alpha:false});
+
+  if(!x)throw Error("Elaborazione immagine non disponibile");
+
+  x.drawImage(img,0,0,c.width,c.height);
+
+  let w=c.width;
+  let h=c.height;
+  let pad=Math.max(14,Math.round(w*.018));
+  let font=Math.max(17,Math.round(w*.018));
+  let line=Math.round(font*1.35);
+
+  let lines=[
+    `OPERATORE: ${r.operator}`,
+    `GPS: ${coord(r.lat)}, ${coord(r.lon)}`,
+    `PRECISIONE GPS: circa ${Math.round(r.accuracy)} m`,
+    `DATA/ORA: ${date(r.created)}`
+  ];
+
+  x.font=`600 ${font}px Arial`;
+
+  let wrapped=[];
+  let max=w-pad*2;
+
+  for(let raw of lines){
+    let cur="";
+
+    for(let word of raw.split(/\s+/)){
+      let test=cur?cur+" "+word:word;
+
+      if(cur&&x.measureText(test).width>max){
+        wrapped.push(cur);
+        cur=word;
+      }else{
+        cur=test;
+      }
+    }
+
+    if(cur)wrapped.push(cur);
+  }
+
+  let bh=pad*2+line*wrapped.length;
+  let y=h-bh;
+
+  x.fillStyle="rgba(0,0,0,.72)";
+  x.fillRect(0,y,w,bh);
+
+  x.fillStyle="#fff";
+  x.font=`600 ${font}px Arial`;
+
+  wrapped.forEach((t,i)=>{
+    x.fillText(t,pad,y+pad+font+i*line,max);
+  });
+
+  return new Promise((ok,no)=>{
+    c.toBlob(
+      b=>b?ok(b):no(Error("Creazione foto non riuscita")),
+      "image/jpeg",
+      .92
+    );
+  });
+}
+
+function geoMessage(e){
+  if(e.code===1)return"Permesso posizione negato: abilita la posizione per questo sito nelle impostazioni del browser.";
+  if(e.code===2)return"Posizione non disponibile: attiva la localizzazione e riprova.";
+  if(e.code===3)return"Il GPS ha impiegato troppo tempo. Riprova.";
+
+  return e.message||"Errore durante l'acquisizione GPS.";
+}
+
+// APERTURA FOTOCAMERA
+take.addEventListener("click",()=>{
+  if(busy)return;
+
+  let n=opInput.value.trim();
+
+  if(!n){
+    alert("Inserisci prima il nome dell'operatore.");
+    opInput.focus();
+    return;
+  }
+
+  if(!window.isSecureContext&&location.hostname!=="localhost"){
+    alert("Fotocamera e GPS richiedono HTTPS. Pubblica il sito su GitHub Pages.");
+    return;
+  }
+
+  remember(n);
+  say("Apertura fotocamera…");
+  photoInput.click();
+});
+
+// SALVATAGGIO FOTO
+photoInput.addEventListener("change",async()=>{
+  let f=photoInput.files&&photoInput.files[0];
+  photoInput.value="";
+
+  if(!f)return;
+
+  let n=opInput.value.trim();
+  if(!n)return;
+
+  busy=true;
+  take.disabled=true;
+
+  try{
+    say("Acquisizione posizione GPS…");
+
+    let g=await position();
+
+    say("Preparazione foto…");
+
+    let im=await imageFrom(f);
+    let r={operator:n,...g,created:Date.now()};
+
+    let blob=await stamp(im,r);
+
+    say("Salvataggio archivio…");
+
+    await add({...r,blob});
+
+    folder.value=n;
+    await loadGallery();
+
+    say("Foto salvata. Puoi condividerla con WhatsApp.");
+
+  }catch(e){
+    console.error(e);
+
+    let m=geoMessage(e);
+    say("Operazione non completata: "+m);
+    alert(m);
+
+  }finally{
+    busy=false;
+    take.disabled=false;
+  }
+});
+
+// SALVA OPERATORE
+$("saveOperator").onclick=()=>{
+  let n=opInput.value.trim();
+
+  if(!n)return alert("Inserisci il nome dell'operatore.");
+
+  remember(n);
+  folder.value=n;
+  loadGallery();
+
+  say("Operatore salvato su questo dispositivo.");
+};
+
+// SVUOTA CAMPO
+$("clearOperator").onclick=()=>{
+  opInput.value="";
+  say("Campo operatore svuotato.");
+};
+
+folder.onchange=()=>{
+  localStorage.setItem("fotoGeo.currentOperator",folder.value);
+  loadGallery();
+};
+
+// ESPORTA FOTO
+$("exportPhotos").onclick=async()=>{
+  let n=folder.value;
+
+  if(!n)return alert("Seleziona un operatore.");
+
+  let a=(await all(n)).sort((x,y)=>x.created-y.created);
+
+  if(!a.length)return alert("Nessuna foto da esportare.");
+
+  for(let r of a){
+    download(r.blob,filename(r));
+    await new Promise(ok=>setTimeout(ok,500));
+  }
+
+  say("Esportazione avviata. Se richiesto, autorizza i download multipli.");
+};
+
+// ELIMINA LE FOTO DEI GIORNI PRECEDENTI
+$("deleteOldPhotos").onclick=async()=>{
+  const n=folder.value;
+
+  if(!n){
+    alert("Seleziona prima un operatore.");
+    return;
+  }
+
+  try{
+    const records=await all(n);
+    const now=new Date();
+
+    const today=new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
+    ).getTime();
+
+    const old=records.filter(r=>r.created<today);
+
+    if(!old.length){
+      alert("Non ci sono foto dei giorni precedenti per questo operatore.");
+      return;
+    }
+
+    if(!confirm(
+      `Vuoi eliminare ${old.length} foto scattate prima di oggi dall'archivio di "${n}"? Le foto di oggi saranno conservate. L'operazione non si può annullare.`
+    ))return;
+
+    await deleteRecords(old);
+    await loadGallery();
+
+    say(`Eliminate ${old.length} foto dei giorni precedenti per ${n}.`);
+
+  }catch(e){
+    console.error(e);
+    alert("Errore durante l'eliminazione delle foto.");
+  }
+};
+
+// MODIFICA OPERATORE
+$("editOperator").onclick=async()=>{
+  const old=folder.value;
+
+  if(!old){
+    alert("Seleziona l'operatore da modificare.");
+    return;
+  }
+
+  let next=prompt("Inserisci il nuovo nome dell'operatore:",old);
+
+  if(next===null)return;
+
+  next=next.trim();
+
+  if(!next){
+    alert("Il nome non può essere vuoto.");
+    return;
+  }
+
+  if(next===old)return;
+
+  const list=names();
+
+  if(list.some(x=>
+    x.toLocaleLowerCase("it")===next.toLocaleLowerCase("it")
+  )){
+    alert("Esiste già un operatore con questo nome.");
+    return;
+  }
+
+  try{
+    const records=await all(old);
+
+    // Modifica anche il nome associato alle foto
+    records.forEach(r=>{
+      r.operator=next;
+    });
+
+    await updateRecords(records);
+
+    localStorage.setItem(
+      "fotoGeo.operators",
+      JSON.stringify(list.map(x=>x===old?next:x))
+    );
+
+    if(localStorage.getItem("fotoGeo.currentOperator")===old){
+      localStorage.setItem("fotoGeo.currentOperator",next);
+    }
+
+    if(opInput.value.trim()===old){
+      opInput.value=next;
+    }
+
+    renderControls();
+    folder.value=next;
+
+    await loadGallery();
+
+    say("Operatore modificato correttamente.");
+
+  }catch(e){
+    console.error(e);
+    alert("Errore durante la modifica dell'operatore.");
+  }
+};
+
+// ELIMINA OPERATORE E TUTTE LE SUE FOTO
+$("deleteOperator").onclick=async()=>{
+  const n=folder.value;
+
+  if(!n){
+    alert("Seleziona l'operatore da eliminare.");
+    return;
+  }
+
+  if(!confirm(
+    `ATTENZIONE! Vuoi eliminare l'operatore "${n}" e TUTTE le sue foto? Questa operazione non si può annullare.`
+  ))return;
+
+  try{
+    const records=await all(n);
+
+    await deleteRecords(records);
+
+    localStorage.setItem(
+      "fotoGeo.operators",
+      JSON.stringify(names().filter(x=>x!==n))
+    );
+
+    if(localStorage.getItem("fotoGeo.currentOperator")===n){
+      localStorage.removeItem("fotoGeo.currentOperator");
+    }
+
+    if(opInput.value.trim()===n){
+      opInput.value="";
+    }
+
+    renderControls();
+    await loadGallery();
+
+    say(`Operatore "${n}" eliminato insieme a ${records.length} foto.`);
+
+  }catch(e){
+    console.error(e);
+    alert("Errore durante l'eliminazione dell'operatore.");
+  }
+};
+
+// AVVIO APPLICAZIONE
+(async()=>{
+  let saved=localStorage.getItem("fotoGeo.currentOperator");
+
+  if(saved)opInput.value=saved;
+
+  try{
+    await openDB();
+
+    renderControls();
+
+    if(saved&&names().includes(saved)){
+      folder.value=saved;
+    }
+
+    await loadGallery();
+
+  }catch(e){
+    console.error(e);
+    say("Archivio locale non disponibile: "+(e.message||"controlla il browser."));
+  }
 })();
-</script></body></html>
+
+})();
+</script>
+</body>
+</html>
