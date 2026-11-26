@@ -3,218 +3,79 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#0f172a">
+<meta name="theme-color" content="#155eef">
 <title>Foto Geo</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:#f3f4f6;color:#111827}
-header{background:#0f172a;color:#fff;padding:18px 16px;position:sticky;top:0;z-index:5}
-h1{margin:0;font-size:24px}header small{opacity:.75}.wrap{max-width:900px;margin:auto;padding:16px}
-.card{background:#fff;border-radius:18px;padding:16px;margin-bottom:16px;box-shadow:0 2px 12px #00000012}
-label{font-weight:700;display:block;margin-bottom:7px}input,select,button{font:inherit}
-input,select{width:100%;padding:13px;border:1px solid #d1d5db;border-radius:12px;background:#fff}
-button{border:0;border-radius:12px;padding:13px 16px;font-weight:700;cursor:pointer}
-.primary{background:#0f172a;color:#fff}.secondary{background:#e5e7eb}.danger{background:#fee2e2;color:#991b1b}
-.row{display:flex;gap:10px;flex-wrap:wrap}.row>*{flex:1;min-width:130px}
-.big{width:100%;font-size:18px;padding:17px;margin-top:12px}
-.hidden{display:none!important}.muted{color:#6b7280;font-size:14px}
-.status{padding:12px;border-radius:12px;background:#f1f5f9;margin-top:12px;font-size:14px}
-#preview{width:100%;border-radius:14px;background:#111;display:block;max-height:65vh;object-fit:contain}
-.photo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px}
-.photo-item{background:#f8fafc;border-radius:14px;overflow:hidden;border:1px solid #e5e7eb}
-.photo-item img{width:100%;aspect-ratio:1;object-fit:cover;display:block}.photo-item div{padding:9px;font-size:12px}
-.pill{display:inline-block;background:#e2e8f0;border-radius:999px;padding:5px 9px;font-size:12px;margin:3px}
-.operator{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid #e5e7eb}
-.operator:last-child{border-bottom:0}.operator-name{font-weight:700}.count{font-size:13px;color:#64748b}
-a.btn{display:inline-block;text-decoration:none;color:#fff;background:#0f172a;border-radius:12px;padding:11px 14px;font-weight:700}
-.notice{font-size:13px;color:#475569;line-height:1.45}
+*{box-sizing:border-box}body{margin:0;background:#f3f5f9;color:#182230;font:16px system-ui,-apple-system,Segoe UI,Arial}
+main{max-width:820px;margin:auto;padding:18px 14px 40px}h1{margin:4px 0;font-size:27px}.intro{color:#667085;font-size:14px;margin:0 0 18px}
+.card{background:#fff;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 3px 14px #10182810}
+label{display:block;font-weight:650;font-size:14px;margin-bottom:7px}input,select,button{font:inherit}
+input[type=text],select{width:100%;height:48px;border:1px solid #d0d5dd;border-radius:11px;padding:0 12px;background:#fff;font-size:16px}
+button{border:0;border-radius:11px;min-height:44px;padding:10px 14px;font-weight:650;cursor:pointer}.primary{background:#155eef;color:#fff;width:100%;min-height:54px;font-size:17px}.secondary{background:#eef4ff;color:#1849a9}.danger{background:#fff0f0;color:#b42318}
+.row{display:flex;gap:9px;flex-wrap:wrap;margin-top:9px}.row>*{flex:1}.status{font-size:14px;color:#475467;line-height:1.5;margin-top:11px;min-height:22px}
+.chips{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}.chip{background:#f2f4f7;border:1px solid #e4e7ec;border-radius:20px;font-size:13px;padding:7px 11px;min-height:36px}
+.hint{font-size:13px;line-height:1.5;color:#6941c6;background:#f9f5ff;border:1px solid #e9d7fe;border-radius:11px;padding:11px;margin-top:12px}
+.gallery{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.photo{border:1px solid #e4e7ec;border-radius:12px;overflow:hidden;min-width:0}
+.photo img{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:#f2f4f7}.meta{font-size:12px;line-height:1.45;padding:9px;overflow-wrap:anywhere}
+.actions{display:flex;gap:6px;padding:0 8px 8px}.actions button{flex:1;padding:7px 5px;font-size:13px;min-height:38px}
+.empty{background:#f9fafb;color:#667085;text-align:center;padding:24px;border-radius:12px;grid-column:1/-1}.small{font-size:12px;color:#667085}
+@media(min-width:620px){.gallery{grid-template-columns:repeat(3,minmax(0,1fr))}}
 </style>
 </head>
-<body>
-<header><h1>📍 FOTO GEO</h1><small>Fotografie con operatore, data, ora e posizione GPS</small></header>
-<main class="wrap">
+<body><main>
+<h1>📍 Foto Geo</h1>
+<p class="intro">Fotografie con operatore, posizione GPS, precisione e data/ora.</p>
 
 <section class="card">
-  <label for="operator">Nome operatore</label>
-  <div class="row">
-    <input id="operator" placeholder="Es. Mario Rossi" autocomplete="name">
-    <button class="secondary" id="saveOperator">Salva operatore</button>
-  </div>
-  <button class="primary big" id="takePhoto">📷 SCATTA FOTO</button>
-  <input id="fileInput" type="file" accept="image/*" capture="environment" class="hidden">
-  <div id="gpsStatus" class="status">📍 La posizione GPS verrà acquisita quando scatti la foto.</div>
+<label for="operator">Nome operatore</label>
+<input id="operator" type="text" placeholder="Inserisci nome e cognome" autocomplete="name">
+<div class="row"><button id="saveOperator" class="secondary" type="button">Salva operatore</button><button id="clearOperator" class="danger" type="button">Svuota campo</button></div>
+<div id="operatorChips" class="chips"></div>
 </section>
 
 <section class="card">
-  <h2>👥 Operatori</h2>
-  <div id="operatorsList" class="muted">Nessun operatore ancora registrato.</div>
-</section>
-
-<section id="gallerySection" class="card hidden">
-  <h2 id="galleryTitle">📁 Foto operatore</h2>
-  <div class="row" style="margin-bottom:12px">
-    <button class="secondary" id="backOperators">← Operatori</button>
-    <button class="primary" id="exportOperator">📥 Esporta foto</button>
-  </div>
-  <div id="gallery" class="photo-grid"></div>
-</section>
-
-<section id="resultSection" class="card hidden">
-  <h2>Anteprima</h2>
-  <img id="preview" alt="Anteprima foto geolocalizzata">
-  <div id="photoInfo" class="status"></div>
-  <div class="row" style="margin-top:12px">
-    <button class="secondary" id="newPhoto">📷 Nuova foto</button>
-    <button class="primary" id="sharePhoto">📤 Condividi</button>
-    <a id="downloadPhoto" class="btn" download>💾 Salva</a>
-  </div>
+<button id="takePhoto" class="primary" type="button">📷 Scatta / scegli una foto</button>
+<input id="photoInput" type="file" accept="image/*" capture="environment" aria-label="Scatta una foto" style="position:fixed;left:-10000px;top:0;width:1px;height:1px;opacity:0">
+<div id="status" class="status" role="status" aria-live="polite">Inserisci il nome dell'operatore e premi il pulsante. Consenti fotocamera e posizione quando richiesto.</div>
+<div class="small">Se il telefono propone fotocamera o galleria, scegli Fotocamera per un nuovo scatto.</div>
 </section>
 
 <section class="card">
-  <div class="notice">
-    <b>Privacy:</b> le foto e i nomi degli operatori vengono conservati localmente nel browser.
-    La posizione viene usata per creare la sovrimpressione. Per ottenere l'indirizzo testuale
-    l'app può interrogare un servizio di geocoding pubblico.
-  </div>
+<div class="row" style="align-items:end"><div style="flex:2"><label for="operatorFolder">Archivio dell'operatore</label><select id="operatorFolder"><option value="">Nessun operatore</option></select></div><button id="exportPhotos" class="secondary" type="button">Esporta foto</button></div>
+<p class="hint">Le foto sono salvate nel browser di questo dispositivo. Usa <b>Condividi</b> per inviarle con WhatsApp. Esporta periodicamente: cancellando i dati del browser o cambiando telefono potresti perdere l'archivio.</p>
 </section>
+
+<section class="card"><h2 style="font-size:19px;margin:0 0 12px">Le tue foto</h2><div id="gallery" class="gallery"><div class="empty">Caricamento archivio…</div></div></section>
 </main>
-
 <script>
-const DB_NAME="FotoGeoDB", DB_VERSION=1, STORE="photos";
-let db, currentOperator="", currentOperatorId="", currentPhotoBlob=null, currentPhotoName="";
-let currentOperatorPhotos=[];
-
-function openDB(){
- return new Promise((resolve,reject)=>{
-  const r=indexedDB.open(DB_NAME,DB_VERSION);
-  r.onupgradeneeded=()=>{if(!r.result.objectStoreNames.contains(STORE)){
-    const s=r.result.createObjectStore(STORE,{keyPath:"id",autoIncrement:true});
-    s.createIndex("operator","operator",{unique:false});
-  }};
-  r.onsuccess=()=>{db=r.result;resolve(db)}; r.onerror=()=>reject(r.error);
- });
-}
-function tx(mode="readonly"){return db.transaction(STORE,mode).objectStore(STORE)}
-function allPhotos(){return new Promise((res,rej)=>{let r=tx().getAll();r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
-function addPhoto(o){return new Promise((res,rej)=>{let r=tx("readwrite").add(o);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
-function deletePhoto(id){return new Promise((res,rej)=>{let r=tx("readwrite").delete(id);r.onsuccess=()=>res();r.onerror=()=>rej(r.error)})}
-
-const $=id=>document.getElementById(id);
-function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
-function operatorKey(name){return name.trim().toLowerCase().replace(/\s+/g," ")}
-function getOperators(photos){
- const map=new Map();
- photos.forEach(p=>{const k=operatorKey(p.operator); if(!map.has(k))map.set(k,{name:p.operator,count:0});map.get(k).count++});
- const saved=localStorage.getItem("fotogeo_operators");
- if(saved) try{JSON.parse(saved).forEach(o=>{if(!map.has(operatorKey(o.name)))map.set(operatorKey(o.name),{name:o.name,count:0})})}catch(e){}
- return [...map.values()].sort((a,b)=>a.name.localeCompare(b.name));
-}
-function saveOperators(list){localStorage.setItem("fotogeo_operators",JSON.stringify(list))}
-async function renderOperators(){
- const photos=await allPhotos(), ops=getOperators(photos);
- if(!ops.length){$("operatorsList").innerHTML="Nessun operatore ancora registrato.";return}
- $("operatorsList").innerHTML=ops.map(o=>`
- <div class="operator">
-  <div><div class="operator-name">👤 ${esc(o.name)}</div><div class="count">${o.count} foto</div></div>
-  <button class="secondary" onclick="openGallery(${JSON.stringify(o.name)})">📁 Apri</button>
- </div>`).join("");
-}
-window.openGallery=async function(name){
- currentOperatorId=operatorKey(name); currentOperator=name;
- $("galleryTitle").textContent=`📁 ${name}`;
- $("gallerySection").classList.remove("hidden"); $("resultSection").classList.add("hidden");
- const photos=(await allPhotos()).filter(p=>operatorKey(p.operator)===currentOperatorId).sort((a,b)=>b.created-a.created);
- currentOperatorPhotos=photos;
- $("gallery").innerHTML=photos.length?photos.map(p=>`
-  <div class="photo-item">
-   <img src="${URL.createObjectURL(p.blob)}" alt="">
-   <div><b>${esc(new Date(p.created).toLocaleString("it-IT"))}</b><br>${esc(p.lat.toFixed(6))}, ${esc(p.lon.toFixed(6))}
-   <br><button class="danger" style="margin-top:7px;padding:7px 9px;font-size:12px" onclick="removePhoto(${p.id})">Elimina</button></div>
-  </div>`).join(""):"<p class='muted'>Nessuna foto per questo operatore.</p>";
-}
-window.removePhoto=async function(id){if(confirm("Eliminare questa fotografia?")){await deletePhoto(id);openGallery(currentOperator);renderOperators()}}
-
-$("backOperators").onclick=()=>{$("gallerySection").classList.add("hidden");renderOperators()};
-$("saveOperator").onclick=()=>{
- const n=$("operator").value.trim(); if(!n){alert("Inserisci il nome dell'operatore.");return}
- currentOperator=n; localStorage.setItem("fotogeo_current_operator",n);
- const photosCache=[]; const ops=getOperators(photosCache);
- if(!ops.some(o=>operatorKey(o.name)===operatorKey(n))) {ops.push({name:n,count:0});saveOperators(ops)}
- $("gpsStatus").textContent=`👤 Operatore attivo: ${n}`;renderOperators();
-};
-$("takePhoto").onclick=()=>{
- const n=$("operator").value.trim()||localStorage.getItem("fotogeo_current_operator")||"";
- if(!n){alert("Inserisci prima il Nome operatore.");$("operator").focus();return}
- currentOperator=n; localStorage.setItem("fotogeo_current_operator",n);
- $("gpsStatus").textContent="📍 Acquisizione posizione GPS...";
- if(!navigator.geolocation){alert("Questo browser non supporta la geolocalizzazione.");return}
- navigator.geolocation.getCurrentPosition(
-   pos=>{$("gpsStatus").textContent="📍 Posizione acquisita. Ora scatta la foto."; $("fileInput").click(); window._gps=pos.coords},
-   err=>{alert("Non è stato possibile ottenere la posizione GPS. Consenti la localizzazione e riprova.");$("gpsStatus").textContent="⚠️ GPS non disponibile.";},
-   {enableHighAccuracy:true,timeout:15000,maximumAge:0}
- );
-};
-$("newPhoto").onclick=()=>$("takePhoto").click();
-$("fileInput").onchange=async e=>{if(e.target.files[0]&&window._gps)await processImage(e.target.files[0],window._gps)};
-function pad(n){return String(n).padStart(2,"0")}
-async function reverseGeocode(lat,lon){
- try{
-  const r=await fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(lat)}&lon=${encodeURIComponent(lon)}&zoom=18&addressdetails=1`,{headers:{"Accept-Language":"it"}});
-  if(!r.ok)return "";
-  const j=await r.json(); return j.display_name||"";
- }catch(e){return ""}
-}
-async function processImage(file,coords){
- const url=URL.createObjectURL(file), img=new Image();
- await new Promise((res,rej)=>{img.onload=res;img.onerror=rej;img.src=url});
- const c=document.createElement("canvas"), ctx=c.getContext("2d");
- c.width=img.naturalWidth;c.height=img.naturalHeight;ctx.drawImage(img,0,0);
- const now=new Date(), date=`${pad(now.getDate())}/${pad(now.getMonth()+1)}/${now.getFullYear()}`, time=`${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
- $("gpsStatus").textContent="📍 Recupero località...";
- const address=await reverseGeocode(coords.latitude,coords.longitude);
- const lines=[
-  `OPERATORE: ${currentOperator}`,
-  `${date} • ${time}`,
-  `COORDINATE: ${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)}`,
-  `ACCURATEZZA GPS: ±${Math.round(coords.accuracy||0)} m`
- ];
- if(address)lines.unshift(`📍 ${address}`);
- const scale=Math.max(1,img.naturalWidth/1200), fs=Math.max(22,Math.round(24*scale)), padX=Math.round(22*scale), lineH=Math.round(fs*1.45), boxH=padX+lineH*lines.length+padX;
- ctx.fillStyle="rgba(0,0,0,.70)";ctx.fillRect(0,c.height-boxH,c.width,boxH);
- ctx.font=`600 ${fs}px -apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif`;ctx.fillStyle="#fff";ctx.textBaseline="top";
- lines.forEach((line,i)=>{
-   let max=c.width-padX*2, text=line;
-   while(ctx.measureText(text).width>max&&text.length>10)text=text.slice(0,-1);
-   ctx.fillText(text,padX,c.height-boxH+padX+i*lineH);
- });
- const blob=await new Promise(r=>c.toBlob(r,"image/jpeg",.92));
- const name=`${date.replaceAll("/","-")}_${time.replaceAll(":","-")}.jpg`;
- const photo={operator:currentOperator,created:Date.now(),lat:coords.latitude,lon:coords.longitude,accuracy:coords.accuracy||0,address,blob,name};
- const id=await addPhoto(photo);photo.id=id;currentPhotoBlob=blob;currentPhotoName=name;
- $("preview").src=URL.createObjectURL(blob);$("downloadPhoto").href=URL.createObjectURL(blob);$("downloadPhoto").download=name;
- $("photoInfo").innerHTML=`<b>Operatore:</b> ${esc(currentOperator)}<br><b>Posizione:</b> ${coords.latitude.toFixed(6)}, ${coords.longitude.toFixed(6)}<br><b>Accuratezza:</b> ±${Math.round(coords.accuracy||0)} m${address?`<br><b>Località:</b> ${esc(address)}`:""}`;
- $("resultSection").classList.remove("hidden");$("gallerySection").classList.add("hidden");$("gpsStatus").textContent="✅ Foto geolocalizzata creata.";
- renderOperators();
-}
-$("sharePhoto").onclick=async()=>{
- if(!currentPhotoBlob)return;
- const file=new File([currentPhotoBlob],currentPhotoName,{type:"image/jpeg"});
- if(navigator.share&&navigator.canShare&&navigator.canShare({files:[file]})){
-  try{await navigator.share({title:"Foto Geo",text:`Foto geolocalizzata - ${currentOperator}`,files:[file]})}catch(e){}
- }else{
-  const a=document.createElement("a");a.href=URL.createObjectURL(currentPhotoBlob);a.download=currentPhotoName;a.click();
-  alert("Il browser non supporta la condivisione diretta. La foto è stata scaricata; puoi allegarla a WhatsApp.");
- }
-};
-$("exportOperator").onclick=async()=>{
- if(!currentOperatorPhotos.length){alert("Nessuna foto da esportare.");return}
- alert("Per mantenere l'app completamente gratuita e senza server, l'esportazione crea un download per ogni foto. Potrai poi condividerle o archiviarle.");
- for(const p of currentOperatorPhotos){const a=document.createElement("a");a.href=URL.createObjectURL(p.blob);a.download=p.name;a.click();await new Promise(r=>setTimeout(r,250))}
-};
-(async()=>{
- await openDB();
- const saved=localStorage.getItem("fotogeo_current_operator");if(saved){$("operator").value=saved;currentOperator=saved}
- renderOperators();
+"use strict";
+(()=>{
+const $=id=>document.getElementById(id),opInput=$("operator"),photoInput=$("photoInput"),take=$("takePhoto"),statusBox=$("status"),folder=$("operatorFolder"),gallery=$("gallery");
+const DB="FotoGeoCrossDevice",STORE="photos";let db=null,busy=false;
+const say=s=>statusBox.textContent=s;
+function names(){try{return JSON.parse(localStorage.getItem("fotoGeo.operators")||"[]")}catch(e){return[]}}
+function remember(n){if(!n)return;let a=names().filter(x=>x.toLocaleLowerCase("it")!==n.toLocaleLowerCase("it"));a.unshift(n);localStorage.setItem("fotoGeo.operators",JSON.stringify(a.slice(0,50)));localStorage.setItem("fotoGeo.currentOperator",n);renderControls()}
+function renderControls(){let a=names(),old=folder.value,chips=$("operatorChips");chips.replaceChildren();a.forEach(n=>{let b=document.createElement("button");b.className="chip";b.textContent=n;b.type="button";b.onclick=()=>{opInput.value=n;folder.value=n;loadGallery()};chips.append(b)});folder.replaceChildren();if(!a.length){folder.add(new Option("Nessun operatore",""));return}a.forEach(n=>folder.add(new Option(n,n)));let pref=localStorage.getItem("fotoGeo.currentOperator");folder.value=a.includes(old)?old:(a.includes(pref)?pref:a[0])}
+function openDB(){return new Promise((ok,no)=>{let r=indexedDB.open(DB,1);r.onupgradeneeded=()=>{let d=r.result;if(!d.objectStoreNames.contains(STORE)){let s=d.createObjectStore(STORE,{keyPath:"id",autoIncrement:true});s.createIndex("operator","operator")}};r.onsuccess=()=>{db=r.result;ok(db)};r.onerror=()=>no(r.error)})}
+function request(mode,fn){return new Promise((ok,no)=>{let s=db.transaction(STORE,mode).objectStore(STORE),q=fn(s);q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)})}
+const add=x=>request("readwrite",s=>s.add(x)),remove=id=>request("readwrite",s=>s.delete(id)),all=n=>request("readonly",s=>s.index("operator").getAll(n));
+const date=t=>new Intl.DateTimeFormat("it-IT",{dateStyle:"short",timeStyle:"medium"}).format(new Date(t)),coord=n=>Number(n).toFixed(6);
+const safe=s=>s.normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9_-]+/gi,"_").replace(/^_+|_+$/g,"")||"operatore";
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function filename(r){return `FotoGeo_${safe(r.operator)}_${r.created}.jpg`}
+function download(blob,name){let u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download=name;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),30000)}
+async function share(blob,name){let f=new File([blob],name,{type:"image/jpeg"});if(navigator.share){try{if(!navigator.canShare||navigator.canShare({files:[f]})){await navigator.share({title:"Foto geolocalizzata",files:[f]});return}}catch(e){if(e.name==="AbortError")return}}download(blob,name);say("Foto scaricata. Se la condivisione non si apre, allegala manualmente in WhatsApp.")}
+async function loadGallery(){gallery.replaceChildren();let n=folder.value;if(!n){gallery.innerHTML='<div class="empty">Salva o seleziona un operatore.</div>';return}try{let a=(await all(n)).sort((x,y)=>y.created-x.created);if(!a.length){gallery.innerHTML='<div class="empty">Nessuna foto per questo operatore.</div>';return}a.forEach(r=>{let c=document.createElement("article");c.className="photo";let im=document.createElement("img");im.alt="Foto geolocalizzata";im.src=URL.createObjectURL(r.blob);let m=document.createElement("div");m.className="meta";m.innerHTML=`<b>${esc(r.operator)}</b><br>📍 ${coord(r.lat)}, ${coord(r.lon)}<br>🎯 Precisione: circa ${Math.round(r.accuracy)} m<br>🕒 ${esc(date(r.created))}`;let ac=document.createElement("div");ac.className="actions";let sh=document.createElement("button");sh.className="secondary";sh.textContent="Condividi";sh.onclick=()=>share(r.blob,filename(r));let de=document.createElement("button");de.className="danger";de.textContent="Elimina";de.onclick=async()=>{if(confirm("Eliminare questa foto?")){await remove(r.id);URL.revokeObjectURL(im.src);loadGallery()}};ac.append(sh,de);c.append(im,m,ac);gallery.append(c)})}catch(e){console.error(e);gallery.innerHTML='<div class="empty">Errore nella lettura dell’archivio.</div>'}}
+function position(){return new Promise((ok,no)=>{if(!navigator.geolocation)return no(new Error("Geolocalizzazione non supportata."));navigator.geolocation.getCurrentPosition(p=>ok({lat:p.coords.latitude,lon:p.coords.longitude,accuracy:p.coords.accuracy}),no,{enableHighAccuracy:true,timeout:30000,maximumAge:0})})}
+function imageFrom(file){return new Promise((ok,no)=>{let u=URL.createObjectURL(file),i=new Image();i.onload=()=>{URL.revokeObjectURL(u);ok(i)};i.onerror=()=>{URL.revokeObjectURL(u);no(new Error("Impossibile leggere questa immagine."))};i.src=u})}
+function stamp(img,r){let scale=Math.min(1,2400/Math.max(img.naturalWidth,img.naturalHeight)),c=document.createElement("canvas");c.width=Math.max(1,Math.round(img.naturalWidth*scale));c.height=Math.max(1,Math.round(img.naturalHeight*scale));let x=c.getContext("2d",{alpha:false});if(!x)throw Error("Elaborazione immagine non disponibile");x.drawImage(img,0,0,c.width,c.height);let w=c.width,h=c.height,pad=Math.max(14,Math.round(w*.018)),font=Math.max(17,Math.round(w*.018)),line=Math.round(font*1.35);let lines=[`OPERATORE: ${r.operator}`,`GPS: ${coord(r.lat)}, ${coord(r.lon)}`,`PRECISIONE GPS: circa ${Math.round(r.accuracy)} m`,`DATA/ORA: ${date(r.created)}`];x.font=`600 ${font}px Arial`;let wrapped=[],max=w-pad*2;for(let raw of lines){let cur="";for(let word of raw.split(/\s+/)){let test=cur?cur+" "+word:word;if(cur&&x.measureText(test).width>max){wrapped.push(cur);cur=word}else cur=test}if(cur)wrapped.push(cur)}let bh=pad*2+line*wrapped.length,y=h-bh;x.fillStyle="rgba(0,0,0,.72)";x.fillRect(0,y,w,bh);x.fillStyle="#fff";x.font=`600 ${font}px Arial`;wrapped.forEach((t,i)=>x.fillText(t,pad,y+pad+font+i*line,max));return new Promise((ok,no)=>c.toBlob(b=>b?ok(b):no(Error("Creazione foto non riuscita")),"image/jpeg",.92))}
+function geoMessage(e){if(e.code===1)return"Permesso posizione negato: abilita la posizione per questo sito nelle impostazioni del browser.";if(e.code===2)return"Posizione non disponibile: attiva la localizzazione e riprova.";if(e.code===3)return"Il GPS ha impiegato troppo tempo. Riprova.";return e.message||"Errore durante l'acquisizione GPS."}
+take.addEventListener("click",()=>{if(busy)return;let n=opInput.value.trim();if(!n){alert("Inserisci prima il nome dell'operatore.");opInput.focus();return}if(!window.isSecureContext&&location.hostname!=="localhost"){alert("Fotocamera e GPS richiedono HTTPS. Pubblica il sito su GitHub Pages.");return}remember(n);say("Apertura fotocamera…");photoInput.click()});
+photoInput.addEventListener("change",async()=>{let f=photoInput.files&&photoInput.files[0];photoInput.value="";if(!f)return;let n=opInput.value.trim();if(!n)return;busy=true;take.disabled=true;try{say("Acquisizione posizione GPS…");let g=await position();say("Preparazione foto…");let im=await imageFrom(f),r={operator:n,...g,created:Date.now()};let blob=await stamp(im,r);say("Salvataggio archivio…");await add({...r,blob});folder.value=n;await loadGallery();say("Foto salvata. Puoi condividerla con WhatsApp.")}catch(e){console.error(e);let m=geoMessage(e);say("Operazione non completata: "+m);alert(m)}finally{busy=false;take.disabled=false}});
+$("saveOperator").onclick=()=>{let n=opInput.value.trim();if(!n)return alert("Inserisci il nome dell'operatore.");remember(n);folder.value=n;loadGallery();say("Operatore salvato su questo dispositivo.")};
+$("clearOperator").onclick=()=>{opInput.value="";say("Campo operatore svuotato.")};
+folder.onchange=loadGallery;
+$("exportPhotos").onclick=async()=>{let n=folder.value;if(!n)return alert("Seleziona un operatore.");let a=(await all(n)).sort((x,y)=>x.created-y.created);if(!a.length)return alert("Nessuna foto da esportare.");for(let r of a){download(r.blob,filename(r));await new Promise(ok=>setTimeout(ok,500))}say("Esportazione avviata. Se richiesto, autorizza i download multipli.")};
+(async()=>{let saved=localStorage.getItem("fotoGeo.currentOperator");if(saved)opInput.value=saved;try{await openDB();renderControls();if(saved&&names().includes(saved))folder.value=saved;await loadGallery()}catch(e){console.error(e);say("Archivio locale non disponibile: "+(e.message||"controlla il browser."))}})();
 })();
-</script>
-</body>
-</html>
+</script></body></html>
